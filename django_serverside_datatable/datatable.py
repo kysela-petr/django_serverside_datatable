@@ -56,7 +56,7 @@ class DataTablesServer(object):
                 data = qs.filter(
                     reduce(operator.and_, _filter)).order_by('%s' % sorting)
             len_data = data.count()
-            data = list(data[pages.start:pages.length].values(*self.columns))
+            data = list(data.values(*self.columns)[pages.start:pages.length])
         else:
             data = qs.order_by('%s' % sorting).values(*self.columns)
             len_data = data.count()
