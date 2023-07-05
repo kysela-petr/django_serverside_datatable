@@ -2,9 +2,16 @@ from collections import namedtuple
 import operator
 from django.db.models import Q
 from functools import reduce
+import uuid
 
 order_dict = {'asc': '', 'desc': '-'}
+def is_valid_uuid(value):
+    try:
+        uuid.UUID(str(value))
 
+        return True
+    except ValueError:
+        return False
 
 class DataTablesServer(object):
     def __init__(self, request, columns, qs):
@@ -80,13 +87,23 @@ class DataTablesServer(object):
             op = "or"
             for i in range(len(self.columns)):
                 if self.request_values['bSearchable_%d' % i] == 'true':
-                    or_filter.append(
-                        Q(**{'%s__icontains' % self.columns[i]: self.request_values['sSearch']}))
+                    if str(self.columns[i]).endswith('_id'):
+                        if is_valid_uuid(self.request_values['sSearch']):
+                            or_filter.append(
+                                Q(**{'%s' % self.columns[i]: self.request_values['sSearch']}))
+                    else:
+                        or_filter.append(
+                            Q(**{'%s__icontains' % self.columns[i]: self.request_values['sSearch']}))
         else:
             op = "and"
             for i in range(len(self.columns)):
                 if (self.request_values.get(f'sSearch_{i}')) and (self.request_values[f'sSearch_{i}'] != ""):
-                    or_filter.append((self.columns[i]+'__icontains', self.request_values[f'sSearch_{i}']))
+                    if str(self.columns[i]).endswith('_id'):
+                        search_uuid = self.request_values[f'sSearch_{i}']
+                        if is_valid_uuid(search_uuid):
+                            or_filter.append((self.columns[i], self.request_values[f'sSearch_{i}']))
+                    else:
+                        or_filter.append((self.columns[i]+'__icontains', self.request_values[f'sSearch_{i}']))
         q_list = [Q(x) for x in or_filter]
         return q_list, op
 
