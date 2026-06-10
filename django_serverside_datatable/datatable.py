@@ -58,14 +58,14 @@ class DataTablesServer(object):
         if _filter:
             if op == "or":
                 data = qs.filter(
-                    reduce(operator.or_, _filter)).order_by('%s' % sorting)
+                    reduce(operator.or_, _filter)).order_by(*sorting)
             else:
                 data = qs.filter(
-                    reduce(operator.and_, _filter)).order_by('%s' % sorting)
+                    reduce(operator.and_, _filter)).order_by(*sorting)
             len_data = data.count()
             data = list(data.values(*self.columns)[pages.start:pages.length])
         else:
-            data = qs.order_by('%s' % sorting).values(*self.columns)
+            data = qs.order_by(*sorting).values(*self.columns)
             len_data = data.count()
             _index = int(pages.start)
             data = data[_index:_index + (pages.length - pages.start)]
@@ -108,17 +108,17 @@ class DataTablesServer(object):
         return q_list, op
 
     def sorting(self):
+        order = []
 
-        order = ''
         if (self.request_values['iSortCol_0'] != "") and (int(self.request_values['iSortingCols']) > 0):
 
             for i in range(int(self.request_values['iSortingCols'])):
-                # column number
                 column_number = int(self.request_values['iSortCol_' + str(i)])
-                # sort direction
                 sort_direction = self.request_values['sSortDir_' + str(i)]
 
-                order = ('' if order == '' else ',') +order_dict[sort_direction]+self.columns[column_number]
+                order.append(
+                    order_dict[sort_direction] + self.columns[column_number]
+                )
 
         return order
 
