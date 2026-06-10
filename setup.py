@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
       name='django_serverside_datatable',
-      version='pkv2.2.0',
+      version='2.2.0',
       description="Simple Server-side Datatable processing view for Django",
       long_description=long_description,
       long_description_content_type="text/markdown",
